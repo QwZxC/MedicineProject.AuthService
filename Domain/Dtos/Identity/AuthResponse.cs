@@ -1,4 +1,4 @@
-﻿namespace MedicineProject.AuthService.Domain.DTOs.Identity
+﻿namespace MedicineProject.AuthService.Domain.Dtos.Identity
 {
     public record AuthResponse
     {

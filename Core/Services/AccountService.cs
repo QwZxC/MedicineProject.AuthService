@@ -1,4 +1,4 @@
-﻿using MedicineProject.AuthService.Domain.DTOs.Identity;
+﻿using MedicineProject.AuthService.Domain.Dtos.Identity;
 using MedicineProject.AuthService.Domain.Extensions;
 using MedicineProject.AuthService.Domain.Models;
 using MedicineProject.AuthService.Domain.Repositories;

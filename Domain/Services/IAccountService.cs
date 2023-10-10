@@ -1,4 +1,4 @@
-﻿using MedicineProject.AuthService.Domain.DTOs.Identity;
+﻿using MedicineProject.AuthService.Domain.Dtos.Identity;
 using MedicineProject.AuthService.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using System.IdentityModel.Tokens.Jwt;

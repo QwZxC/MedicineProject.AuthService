@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MedicineProject.AuthService.Domain.Services;
-using MedicineProject.AuthService.Domain.DTOs.Identity;
+using MedicineProject.AuthService.Domain.Dtos.Identity;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using MedicineProject.AuthService.Domain.Models;

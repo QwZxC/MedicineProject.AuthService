@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MedicineProject.AuthService.Domain.DTOs.Identity
+namespace MedicineProject.AuthService.Domain.Dtos.Identity
 {
     public record AuthRequest
     {
