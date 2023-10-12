@@ -23,9 +23,9 @@ namespace MedicineProject.AuthService.Controllers
             _tokenService = tokenService;
         }
 
-        [HttpPost("login")]
+        [HttpPost("login-patient")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-        public async Task<ActionResult<AuthResponse>> Authenticate([FromBody] AuthRequest request)
+        public async Task<ActionResult<AuthResponse>> AuthenticatePatient([FromBody] AuthRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -69,15 +69,66 @@ namespace MedicineProject.AuthService.Controllers
                 Username = user.UserName!,
                 Email = user.Email!,
                 Token = accessToken,
-                RefreshToken = user.RefreshToken,
-                Role = request.Role
+                RefreshToken = user.RefreshToken
             });
         }
 
 
+        [HttpPost("login-doctor")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
+        public async Task<ActionResult<AuthResponse>> AuthenticateDoctor([FromBody] AuthRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _accountService.TrimProperties(request);
+
+            Patient? managedUser = await _accountService.FindUserByEmailAsync(request.Email);
+
+            if (managedUser == null)
+            {
+                return BadRequest("Нет пользователя с данной почтой");
+            }
+
+            bool isPasswordValid = await _accountService.CheckPasswordAsync(managedUser, request.Password);
+
+            if (!isPasswordValid)
+            {
+                return BadRequest("Не верный пароль");
+            }
+
+            Patient? user = await _accountService.FindByEmailInDbAsync(request.Email);
+
+            if (user is null)
+            {
+                return Unauthorized();
+            }
+
+            List<long> roleIds = await _accountService.FindRoleIdsAsync(user.Id);
+            List<IdentityRole<long>> roles = await _accountService.FindRolesAsync(roleIds);
+
+            string accessToken = _tokenService.CreateToken(user, roles);
+            user.RefreshToken = _accountService.GenerateRefreshToken();
+            user.RefreshTokenExpiryTime = _accountService.GetRefreshTokenExpiryTime();
+
+            await _accountService.SaveChangedAsync();
+
+            return Ok(new AuthResponse
+            {
+                Username = user.UserName!,
+                Email = user.Email!,
+                Token = accessToken,
+                RefreshToken = user.RefreshToken
+            });
+        }
+
         [HttpPost("register")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(AuthResponse))]
-        public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<AuthResponse>> RegisterPatient([FromBody] RegisterRequest request)
         {
             if (!ModelState.IsValid) 
             {
@@ -106,19 +157,18 @@ namespace MedicineProject.AuthService.Controllers
                 return BadRequest(BAD_PASSWORD);
             }
 
-            Patient? findUser = await _accountService.FindUserByEmailAsync(request.Email);
-            if (findUser == null) 
+            Patient? findedUser = await _accountService.FindUserByEmailAsync(request.Email);
+            if (findedUser == null) 
             {
                 NotFound($"Пользователь {request.Email} не найден");
             } 
 
-            await _accountService.LinkUserRole(findUser, request.Role);
+            await _accountService.LinkUserRole(findedUser, request.Role);
 
-            return await Authenticate(new AuthRequest
+            return await AuthenticatePatient(new AuthRequest
             {
                 Email = request.Email,
-                Password = request.Password,
-                Role = request.Role
+                Password = request.Password
             });
         }
 
@@ -191,6 +241,5 @@ namespace MedicineProject.AuthService.Controllers
             await _accountService.RevokeAllAsync();
             return Ok();
         }
-
     }
 }

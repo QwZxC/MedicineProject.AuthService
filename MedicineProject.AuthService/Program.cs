@@ -22,7 +22,7 @@ namespace MedicineProject.AuthService
             var builder = WebApplication.CreateBuilder(args);
             builder.Services.AddDbContext<WebMobileContext>(
                 options => options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-            
+
             builder.Services.AddScoped<IAccountRepositroy, AccountRepository>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
@@ -85,7 +85,6 @@ namespace MedicineProject.AuthService
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
